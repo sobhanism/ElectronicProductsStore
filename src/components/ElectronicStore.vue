@@ -1,161 +1,130 @@
 <template>
-  <div class="electronic-store">
-    <h1>فروشگاه محصولات الکترونیکی</h1>
-
-    <div v-if="productStore.products.length === 0" class="loading">در حال بارگذاری محصولات...</div>
-
-    <div v-else class="products-grid">
-      <div v-for="product in activeProducts" :key="product.id" class="product-card">
-        <div class="product-image">
-          <img :src="product.coverImage" :alt="product.name" />
+  <div class="products-container">
+    <div v-for="item in productStore.products" :key="item.id" class="product-card">
+      <div class="card-header">
+        <h2 class="product-title">{{ item.name }}</h2>
+      </div>
+      <div class="card-body">
+        <div class="product-image" v-if="item.coverImage">
+          <img :src="item.coverImage" :alt="item.name" />
         </div>
-
-        <div class="product-info">
-          <h3 class="product-name">{{ product.name }}</h3>
-
-          <div class="price-info">
-            <span v-if="product.discount > 0" class="original-price"> ${{ product.price }} </span>
-            <span class="final-price"> ${{ finalPrice(product) }} </span>
-            <span v-if="product.discount > 0" class="discount">
-              {{ product.discount }}% تخفیف
-            </span>
-          </div>
+        <div class="product-details">
+          <p class="product-price">${{ item.price }}</p>
+          <p class="product-discount">
+            <span v-if="item.discount > 0">{{ item.discount }}% OFF</span>
+            <span v-else>&nbsp;</span>
+          </p>
         </div>
+      </div>
+      <div class="card-footer">
+        <button class="btn-primary">Add to Cart</button>
       </div>
     </div>
   </div>
 </template>
-
-<script setup lang="ts">
-import { onMounted, computed } from 'vue'
+<script lang="ts" setup>
 import { useProductStore } from '@/stores/product-store'
-
-type Product = {
-  id: string
-  name: string
-  discount: number
-  price: number
-  active: boolean
-  coverImage: string
-  images: string[]
-}
-
 const productStore = useProductStore()
-
-// محصولات فعال
-const activeProducts = computed(() => {
-  return productStore.products.filter((product) => product.active)
-})
-
-// محاسبه قیمت نهایی با تخفیف
-const finalPrice = (product: Product) => {
-  if (product.discount > 0) {
-    return ((product.price * (100 - product.discount)) / 100).toFixed(2)
-  }
-  return product.price.toFixed(2)
-}
-
-// بارگذاری محصولات هنگام mount شدن کامپوننت
-onMounted(() => {
-  productStore.fetchProducts()
-})
+productStore.fetchProducts()
 </script>
 
 <style scoped>
-.electronic-store {
-  padding: 2rem;
+.products-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  padding: 1rem;
   max-width: 1200px;
   margin: 0 auto;
 }
 
-h1 {
-  text-align: center;
-  color: #2c3e50;
-  margin-bottom: 2rem;
-  font-size: 2.5rem;
-}
-
-.loading {
-  text-align: center;
-  font-size: 1.2rem;
-  color: #7f8c8d;
-  padding: 2rem;
-}
-
-.products-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 2rem;
-  margin-top: 2rem;
-}
-
 .product-card {
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition:
-    transform 0.3s ease,
-    box-shadow 0.3s ease;
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+  border: 1px solid #e5e7eb;
 }
 
 .product-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 }
 
-.product-image {
-  width: 100%;
-  height: 200px;
-  overflow: hidden;
-  background: #f8f9fa;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.card-header {
+  padding: 1rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
 }
 
-.product-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.product-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  text-align: center;
 }
 
-.product-info {
+.card-body {
   padding: 1.5rem;
 }
 
-.product-name {
-  font-size: 1.3rem;
-  font-weight: 600;
-  color: #2c3e50;
-  margin: 0 0 1rem 0;
+.product-image {
+  text-align: center;
+  margin-bottom: 1rem;
 }
 
-.price-info {
+.product-image img {
+  max-width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 2px solid #f3f4f6;
+}
+
+.product-details {
   display: flex;
+  justify-content: space-between;
   align-items: center;
+  margin-top: 1rem;
+}
+
+.product-price {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #059669;
+  margin: 0;
+}
+
+.product-discount {
+  color: #dc2626;
+  font-weight: 500;
+  margin: 0;
+}
+
+.card-footer {
+  padding: 1rem;
+  background: #f9fafb;
+  display: flex;
   gap: 0.5rem;
-  flex-wrap: wrap;
+  justify-content: center;
 }
 
-.original-price {
-  font-size: 1rem;
-  color: #95a5a6;
-  text-decoration: line-through;
-}
-
-.final-price {
-  font-size: 1.4rem;
-  font-weight: 700;
-  color: #27ae60;
-}
-
-.discount {
-  background: #e74c3c;
+.btn-primary {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  flex: 1;
+  background: #3b82f6;
   color: white;
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  font-weight: 600;
+}
+
+.btn-primary:hover {
+  background: #2563eb;
 }
 </style>

@@ -6,7 +6,7 @@
       "discount": 20,
       "price": 1000,
       "active": true,
-      "coverImage": "laptop.jpg",
+      "coverImage": "src/assets/logo.svg",
       "images": ["laptop1.jpg", "laptop2.jpg"]
     },
     {
@@ -15,7 +15,7 @@
       "discount": 10,
       "price": 500,
       "active": true,
-      "coverImage": "smartphone.jpg",
+      "coverImage": "src/assets/logo.svg",
       "images": ["smartphone1.jpg", "smartphone2.jpg"]
     },
     {
@@ -24,7 +24,7 @@
       "discount": 15,
       "price": 150,
       "active": false,
-      "coverImage": "headphones.jpg",
+      "coverImage": "src/assets/logo.svg",
       "images": ["headphones1.jpg", "headphones2.jpg"]
     },
     {
@@ -33,7 +33,7 @@
       "discount": 5,
       "price": 200,
       "active": true,
-      "coverImage": "smartwatch.jpg",
+      "coverImage": "src/assets/logo.svg",
       "images": ["smartwatch1.jpg", "smartwatch2.jpg"]
     },
     {
@@ -42,7 +42,7 @@
       "discount": 25,
       "price": 300,
       "active": true,
-      "coverImage": "tablet.jpg",
+      "coverImage": "src/assets/logo.svg",
       "images": ["tablet1.jpg", "tablet2.jpg"]
     },
     {
@@ -51,7 +51,7 @@
       "discount": 30,
       "price": 800,
       "active": false,
-      "coverImage": "camera.jpg",
+      "coverImage": "src/assets/logo.svg",
       "images": ["camera1.jpg", "camera2.jpg"]
     }
   ]
