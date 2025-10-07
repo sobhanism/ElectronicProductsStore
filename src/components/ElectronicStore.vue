@@ -36,17 +36,34 @@
             <div v-for="item in cartStore.cart.items" :key="item.productId" class="cart-item">
               <div class="cart-item-info">
                 <h3>{{ item.productName }}</h3>
-                <p class="cart-item-details">
-                  تعداد: {{ item.count }} × ${{ getProductPrice(item.productId) }}
-                </p>
+                <div class="cart-item-pricing">
+                  <p class="cart-item-details">تعداد: {{ item.count }}</p>
+                  <div v-if="getProductDiscount(item.productId) > 0" class="discount-info">
+                    <p class="cart-original-price">
+                      قیمت اصلی: ${{ getProductPrice(item.productId) }}
+                    </p>
+                    <p class="cart-discount-badge">
+                      {{ getProductDiscount(item.productId) }}% تخفیف
+                    </p>
+                  </div>
+                  <p class="cart-item-details">
+                    قیمت واحد: ${{ getDiscountedPrice(item.productId).toFixed(2) }}
+                  </p>
+                </div>
               </div>
               <div class="cart-item-price">
-                ${{ (getProductPrice(item.productId) * item.count).toFixed(2) }}
+                ${{ (getDiscountedPrice(item.productId) * item.count).toFixed(2) }}
               </div>
             </div>
-            <div class="cart-total">
-              <h3>جمع کل:</h3>
-              <h3 class="total-price">${{ cartStore.totalPrice.toFixed(2) }}</h3>
+            <div class="cart-summary">
+              <div v-if="getTotalDiscount() > 0" class="summary-row discount-row">
+                <span>مجموع تخفیف:</span>
+                <span class="discount-amount">-${{ getTotalDiscount().toFixed(2) }}</span>
+              </div>
+              <div class="cart-total">
+                <h3>جمع کل:</h3>
+                <h3 class="total-price">${{ getTotalPrice().toFixed(2) }}</h3>
+              </div>
             </div>
           </div>
         </div>
@@ -109,6 +126,32 @@ const showCart = ref(false)
 const getProductPrice = (productId: string): number => {
   const product = productStore.products.find((p) => p.id === productId)
   return product ? product.price : 0
+}
+
+const getProductDiscount = (productId: string): number => {
+  const product = productStore.products.find((p) => p.id === productId)
+  return product ? product.discount : 0
+}
+
+const getDiscountedPrice = (productId: string): number => {
+  const product = productStore.products.find((p) => p.id === productId)
+  if (!product) return 0
+  const discount = product.discount || 0
+  return product.price - (product.price * discount) / 100
+}
+
+const getTotalPrice = (): number => {
+  return cartStore.cart.items.reduce((total, item) => {
+    return total + getDiscountedPrice(item.productId) * item.count
+  }, 0)
+}
+
+const getTotalDiscount = (): number => {
+  return cartStore.cart.items.reduce((total, item) => {
+    const originalPrice = getProductPrice(item.productId)
+    const discountedPrice = getDiscountedPrice(item.productId)
+    return total + (originalPrice - discountedPrice) * item.count
+  }, 0)
 }
 
 const clearCartHandler = () => {
@@ -416,16 +459,69 @@ const clearCartHandler = () => {
   color: #1f2937;
 }
 
+.cart-item-pricing {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
 .cart-item-details {
   margin: 0;
   color: #6b7280;
   font-size: 0.9rem;
 }
 
+.discount-info {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin: 0.25rem 0;
+}
+
+.cart-original-price {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #9ca3af;
+  text-decoration: line-through;
+}
+
+.cart-discount-badge {
+  margin: 0;
+  background: #dc2626;
+  color: white;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
 .cart-item-price {
   font-size: 1.2rem;
   font-weight: bold;
   color: #059669;
+}
+
+.cart-summary {
+  margin-top: 1rem;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+}
+
+.discount-row {
+  background: #fef2f2;
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+}
+
+.discount-amount {
+  color: #dc2626;
+  font-weight: bold;
+  font-size: 1.1rem;
 }
 
 .cart-total {
