@@ -1,7 +1,7 @@
 <template>
   <div style="padding: 25px">
     <div class="cart-container">
-      <button class="cart-button">
+      <button class="cart-button" @click="showCart = true">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           width="24"
@@ -19,6 +19,48 @@
         </svg>
         <span v-if="cartStore.itemCount > 0" class="cart-badge">{{ cartStore.itemCount }}</span>
       </button>
+    </div>
+
+    <!-- Cart Modal -->
+    <div v-if="showCart" class="modal-overlay" @click="showCart = false">
+      <div class="modal-content" @click.stop>
+        <div class="modal-header">
+          <h2>سبد خرید</h2>
+          <button class="close-button" @click="showCart = false">×</button>
+        </div>
+        <div class="modal-body">
+          <div v-if="cartStore.cart.items.length === 0" class="empty-cart">
+            <p>سبد خرید شما خالی است</p>
+          </div>
+          <div v-else>
+            <div v-for="item in cartStore.cart.items" :key="item.productId" class="cart-item">
+              <div class="cart-item-info">
+                <h3>{{ item.productName }}</h3>
+                <p class="cart-item-details">
+                  تعداد: {{ item.count }} × ${{ getProductPrice(item.productId) }}
+                </p>
+              </div>
+              <div class="cart-item-price">
+                ${{ (getProductPrice(item.productId) * item.count).toFixed(2) }}
+              </div>
+            </div>
+            <div class="cart-total">
+              <h3>جمع کل:</h3>
+              <h3 class="total-price">${{ cartStore.totalPrice.toFixed(2) }}</h3>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn-secondary" @click="showCart = false">بستن</button>
+          <button 
+            v-if="cartStore.cart.items.length > 0" 
+            class="btn-danger" 
+            @click="clearCartHandler"
+          >
+            پاک کردن سبد
+          </button>
+        </div>
+      </div>
     </div>
     <div class="products-container">
       <div v-for="item in productStore.products" :key="item.id" class="product-card">
@@ -47,12 +89,26 @@
   </div>
 </template>
 <script lang="ts" setup>
+import { ref } from 'vue'
 import { useProductStore } from '@/stores/product-store'
 import { useCartStore } from '@/stores/cart-store'
+
 const productStore = useProductStore()
 productStore.fetchProducts()
 
 const cartStore = useCartStore()
+const showCart = ref(false)
+
+const getProductPrice = (productId: string): number => {
+  const product = productStore.products.find((p) => p.id === productId)
+  return product ? product.price : 0
+}
+
+const clearCartHandler = () => {
+  if (confirm('آیا مطمئن هستید که می‌خواهید سبد خرید را خالی کنید؟')) {
+    cartStore.clearCart()
+  }
+}
 </script>
 
 <style scoped>
@@ -202,5 +258,199 @@ const cartStore = useCartStore()
   justify-content: center;
   font-size: 0.75rem;
   font-weight: bold;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal-content {
+  background: white;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 16px 16px 0 0;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 2rem;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background 0.2s ease;
+}
+
+.close-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.modal-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.empty-cart {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #6b7280;
+}
+
+.empty-cart p {
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.cart-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+  transition: background 0.2s ease;
+}
+
+.cart-item:hover {
+  background: #f9fafb;
+}
+
+.cart-item:last-child {
+  border-bottom: none;
+}
+
+.cart-item-info h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+  color: #1f2937;
+}
+
+.cart-item-details {
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.cart-item-price {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #059669;
+}
+
+.cart-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 1rem 0.5rem;
+  margin-top: 1rem;
+  border-top: 2px solid #667eea;
+}
+
+.cart-total h3 {
+  margin: 0;
+  font-size: 1.3rem;
+}
+
+.total-price {
+  color: #059669;
+  font-size: 1.5rem !important;
+}
+
+.modal-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+.btn-secondary {
+  padding: 0.75rem 1.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  background: white;
+  color: #374151;
+}
+
+.btn-secondary:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+.btn-danger {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  background: #dc2626;
+  color: white;
+}
+
+.btn-danger:hover {
+  background: #b91c1c;
 }
 </style>
