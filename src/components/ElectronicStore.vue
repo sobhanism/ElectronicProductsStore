@@ -1,31 +1,58 @@
 <template>
-  <div class="products-container">
-    <div v-for="item in productStore.products" :key="item.id" class="product-card">
-      <div class="card-header">
-        <h2 class="product-title">{{ item.name }}</h2>
-      </div>
-      <div class="card-body">
-        <div class="product-image" v-if="item.coverImage">
-          <img :src="item.coverImage" :alt="item.name" />
+  <div style="padding: 25px">
+    <div class="cart-container">
+      <button class="cart-button">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <circle cx="9" cy="21" r="1" />
+          <circle cx="20" cy="21" r="1" />
+          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+        </svg>
+        <span v-if="cartStore.itemCount > 0" class="cart-badge">{{ cartStore.itemCount }}</span>
+      </button>
+    </div>
+    <div class="products-container">
+      <div v-for="item in productStore.products" :key="item.id" class="product-card">
+        <div class="card-header">
+          <h2 class="product-title">{{ item.name }}</h2>
         </div>
-        <div class="product-details">
-          <p class="product-price">${{ item.price }}</p>
-          <p class="product-discount">
-            <span v-if="item.discount > 0">{{ item.discount }}% OFF</span>
-            <span v-else>&nbsp;</span>
-          </p>
+        <div class="card-body">
+          <div class="product-image" v-if="item.coverImage">
+            <img :src="item.coverImage" :alt="item.name" />
+          </div>
+          <div class="product-details">
+            <p class="product-price">${{ item.price }}</p>
+            <p class="product-discount">
+              <span v-if="item.discount > 0">{{ item.discount }}% OFF</span>
+              <span v-else>&nbsp;</span>
+            </p>
+          </div>
         </div>
-      </div>
-      <div class="card-footer">
-        <button class="btn-primary">Add to Cart</button>
+        <div class="card-footer">
+          <button class="btn-primary" @click="cartStore.decreaseFromCart(item.id)">-</button>
+          <span class="item-count">{{ cartStore.getProductCount(item.id) }}</span>
+          <button class="btn-primary" @click="cartStore.addToCart(item.id, item.name)">+</button>
+        </div>
       </div>
     </div>
   </div>
 </template>
 <script lang="ts" setup>
 import { useProductStore } from '@/stores/product-store'
+import { useCartStore } from '@/stores/cart-store'
 const productStore = useProductStore()
 productStore.fetchProducts()
+
+const cartStore = useCartStore()
 </script>
 
 <style scoped>
@@ -126,5 +153,54 @@ productStore.fetchProducts()
 
 .btn-primary:hover {
   background: #2563eb;
+}
+
+.item-count {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #1f2937;
+  min-width: 40px;
+  text-align: center;
+}
+
+.cart-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+}
+
+.cart-button {
+  position: relative;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+.cart-button:hover {
+  background: #2563eb;
+  transform: scale(1.05);
+}
+
+.cart-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background: #dc2626;
+  color: white;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: bold;
 }
 </style>

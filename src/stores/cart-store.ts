@@ -11,7 +11,6 @@ export const useCartStore = defineStore('cart', {
       return state.cart.items.reduce((total, item) => total + item.count, 0)
     },
     totalPrice: (state) => {
-      // This getter assumes you have access to the product store to get product prices
       const productStore = useProductStore()
       return state.cart.items.reduce((total, item) => {
         const product = productStore.products.find((p) => p.id === item.productId)
@@ -28,6 +27,17 @@ export const useCartStore = defineStore('cart', {
         this.cart.items.push({ productId, productName, count: 1 })
       }
     },
+    decreaseFromCart(productId: string) {
+      const existingItem = this.cart.items.find((item) => item.productId === productId)
+      if (existingItem) {
+        if (existingItem.count > 1) {
+          existingItem.count--
+        } else {
+          // Remove item if count reaches 0
+          this.removeFromCart(productId)
+        }
+      }
+    },
     removeFromCart(productId: string) {
       const itemIndex = this.cart.items.findIndex((item) => item.productId === productId)
       if (itemIndex !== -1) {
@@ -36,6 +46,10 @@ export const useCartStore = defineStore('cart', {
     },
     clearCart() {
       this.cart.items = []
+    },
+    getProductCount(productId: string): number {
+      const item = this.cart.items.find((item) => item.productId === productId)
+      return item ? item.count : 0
     },
   },
 })

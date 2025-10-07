@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-type Product = {
+export type Product = {
   id: string
   name: string
   discount: number
