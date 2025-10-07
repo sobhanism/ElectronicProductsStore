@@ -52,9 +52,9 @@
         </div>
         <div class="modal-footer">
           <button class="btn-secondary" @click="showCart = false">بستن</button>
-          <button 
-            v-if="cartStore.cart.items.length > 0" 
-            class="btn-danger" 
+          <button
+            v-if="cartStore.cart.items.length > 0"
+            class="btn-danger"
             @click="clearCartHandler"
           >
             پاک کردن سبد
@@ -292,7 +292,9 @@ const clearCartHandler = () => {
   max-height: 80vh;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  box-shadow:
+    0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 10px 10px -5px rgba(0, 0, 0, 0.04);
   animation: slideUp 0.3s ease;
 }
 
