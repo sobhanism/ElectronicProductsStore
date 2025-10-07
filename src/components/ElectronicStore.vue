@@ -72,9 +72,16 @@
             <img :src="item.coverImage" :alt="item.name" />
           </div>
           <div class="product-details">
-            <p class="product-price">${{ item.price }}</p>
+            <div class="price-section">
+              <p v-if="item.discount > 0" class="original-price">${{ item.price }}</p>
+              <p class="product-price">
+                ${{ (item.price - (item.price * item.discount) / 100).toFixed(2) }}
+              </p>
+            </div>
             <p class="product-discount">
-              <span v-if="item.discount > 0">{{ item.discount }}% OFF</span>
+              <span v-if="item.discount > 0" class="discount-label"
+                >{{ item.discount }}% تخفیف</span
+              >
               <span v-else>&nbsp;</span>
             </p>
           </div>
@@ -174,6 +181,19 @@ const clearCartHandler = () => {
   margin-top: 1rem;
 }
 
+.price-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.original-price {
+  font-size: 1rem;
+  color: #9ca3af;
+  text-decoration: line-through;
+  margin: 0;
+}
+
 .product-price {
   font-size: 1.5rem;
   font-weight: bold;
@@ -182,9 +202,19 @@ const clearCartHandler = () => {
 }
 
 .product-discount {
-  color: #dc2626;
-  font-weight: 500;
+  display: flex;
+  align-items: center;
   margin: 0;
+}
+
+.discount-label {
+  background: #dc2626;
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  box-shadow: 0 2px 4px rgba(220, 38, 38, 0.3);
 }
 
 .card-footer {
