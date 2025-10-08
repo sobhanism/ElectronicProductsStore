@@ -1,25 +1,41 @@
 <template>
   <div style="padding: 25px">
-    <div class="cart-container">
-      <button class="cart-button" @click="showCart = true">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <circle cx="9" cy="21" r="1" />
-          <circle cx="20" cy="21" r="1" />
-          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
-        </svg>
-        <span v-if="cartStore.itemCount > 0" class="cart-badge">{{ cartStore.itemCount }}</span>
-      </button>
+    <!-- Header with Auth and Cart -->
+    <div class="header-container">
+      <div class="auth-section">
+        <div v-if="authStore.isLoggedIn" class="user-info">
+          <span class="welcome-text">سلام، {{ authStore.username }}</span>
+          <button class="btn-secondary" @click="handleLogout">خروج</button>
+        </div>
+        <div v-else>
+          <button class="btn-primary" @click="showAuthModal = true">ورود / ثبت‌نام</button>
+        </div>
+      </div>
+
+      <div class="cart-container">
+        <button class="cart-button" @click="showCart = true">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="9" cy="21" r="1" />
+            <circle cx="20" cy="21" r="1" />
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+          </svg>
+          <span v-if="cartStore.itemCount > 0" class="cart-badge">{{ cartStore.itemCount }}</span>
+        </button>
+      </div>
     </div>
+
+    <!-- Auth Modal -->
+    <AuthModal :show="showAuthModal" @close="showAuthModal = false" @success="onAuthSuccess" />
 
     <!-- Cart Modal -->
     <div v-if="showCart" class="modal-overlay" @click="showCart = false">
@@ -113,15 +129,36 @@
   </div>
 </template>
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useProductStore } from '@/stores/product-store'
 import { useCartStore } from '@/stores/cart-store'
+import { useAuthStore } from '@/stores/auth-store'
+import AuthModal from './AuthModal.vue'
 
 const productStore = useProductStore()
-productStore.fetchProducts()
-
 const cartStore = useCartStore()
+const authStore = useAuthStore()
+
 const showCart = ref(false)
+const showAuthModal = ref(false)
+
+// بارگذاری محصولات و بررسی وضعیت احراز هویت
+onMounted(() => {
+  productStore.fetchProducts()
+  authStore.checkAuth()
+  cartStore.loadCartFromLocalStorage()
+})
+
+const onAuthSuccess = () => {
+  // هنگام لاگین موفق، سبد خرید کاربر بارگذاری می‌شود
+  console.log('ورود موفقیت‌آمیز بود')
+}
+
+const handleLogout = async () => {
+  if (confirm('آیا مطمئن هستید که می‌خواهید خارج شوید؟')) {
+    await authStore.logout()
+  }
+}
 
 const getProductPrice = (productId: string): number => {
   const product = productStore.products.find((p) => p.id === productId)
@@ -162,6 +199,35 @@ const clearCartHandler = () => {
 </script>
 
 <style scoped>
+/* Header Styles */
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.auth-section {
+  display: flex;
+  align-items: center;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.welcome-text {
+  font-weight: 600;
+  color: #1f2937;
+  font-size: 1rem;
+}
+
 .products-container {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -293,10 +359,8 @@ const clearCartHandler = () => {
 }
 
 .cart-container {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 1000;
+  display: flex;
+  align-items: center;
 }
 
 .cart-button {
