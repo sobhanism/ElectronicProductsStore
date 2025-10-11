@@ -11,7 +11,15 @@ export type Product = {
   category?: string
   description?: string
 }
-
+export type Result<T> = T & {
+  success: boolean
+  error?: string
+}
+export type UpdatedProduct = Result<{
+  product?: Product
+}>
+export type DeletedProduct = Result<unknown>
+const delay = async (time: number) => await new Promise((resolve) => setTimeout(resolve, time))
 export const useProductStore = defineStore('products', {
   state: () => ({
     products: [] as Product[],
@@ -132,7 +140,7 @@ export const useProductStore = defineStore('products', {
 
       try {
         // شبیه‌سازی درخواست API
-        await new Promise((resolve) => setTimeout(resolve, 500))
+        await delay(400)
 
         const newProduct: Product = {
           ...product,
@@ -162,7 +170,8 @@ export const useProductStore = defineStore('products', {
         if (index !== -1) {
           const updatedProduct = { ...this.products[index], ...updates } as Product
           this.products[index] = updatedProduct
-          return { success: true, product: updatedProduct }
+
+          return { success: true, product: updatedProduct } as UpdatedProduct
         } else {
           throw new Error('محصول یافت نشد')
         }
@@ -178,15 +187,12 @@ export const useProductStore = defineStore('products', {
     async deleteProduct(id: string) {
       this.isLoading = true
       this.error = null
-
+      delay(500)
       try {
-        // شبیه‌سازی درخواست API
-        await new Promise((resolve) => setTimeout(resolve, 500))
-
         const index = this.products.findIndex((p) => p.id === id)
         if (index !== -1) {
           this.products.splice(index, 1)
-          return { success: true }
+          return { success: true } as DeletedProduct
         } else {
           throw new Error('محصول یافت نشد')
         }
@@ -205,7 +211,40 @@ export const useProductStore = defineStore('products', {
 
     // فیلتر محصولات بر اساس محدوده قیمت
     filterByPriceRange(min: number, max: number) {
-      return this.products.filter((product) => product.price >= min && product.price <= max)
+      return this.products
+        .filter((product) => product.price >= min && product.price <= max)
+        .map((xx) => ({
+          id: xx.id,
+          name: xx.name.slice(xx.name.length - 1, xx.name.length),
+          price: xx.price,
+        }))
+    },
+    filterByPriceRangeAndDiscount(min: number, max: number, percentDiscount: number) {
+      return this.products
+        .filter((product) => product.price >= min && product.price <= max)
+        .map((xx) => ({
+          id: xx.id,
+          name: xx.name,
+          originalPrice: xx.price,
+          discountedPrice: applyDiscount(xx, percentDiscount),
+        }))
     },
   },
 })
+function applyDiscount(
+  xx: {
+    id: string
+    name: string
+    discount: number
+    price: number
+    active: boolean
+    coverImage: string
+    images: string[]
+    category?: string | undefined
+    description?: string | undefined
+  },
+  percentDiscount: number,
+): number {
+  const computedDiscount = xx.price - xx.price * (percentDiscount / 100)
+  return computedDiscount < 0 ? 0 : Math.floor(computedDiscount)
+}
